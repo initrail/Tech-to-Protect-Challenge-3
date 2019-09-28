@@ -4,6 +4,7 @@ import android.Manifest
 import android.content.pm.PackageManager
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Log
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 
@@ -26,9 +27,9 @@ class MainActivity : AppCompatActivity() {
         when (requestCode) {
             ENABLE_CAMERA -> {
                 if((grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED)){
-
+                    Log.i("dhl", "Camera permission granted.");
                 } else {
-
+                    Log.i("dhl", "Camera permission rejected.");
                 }
                 return
             }
