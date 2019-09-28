@@ -29,51 +29,21 @@ import java.util.concurrent.CompletableFuture
 class MainActivity : AppCompatActivity() {
 
     var ENABLE_CAMERA: Int = 111;
-    var andyRenderable: ModelRenderable? = null;
     var viewRenderable: ViewRenderable? = null;
+    var future: CompletableFuture<ViewRenderable>? = null;
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+        var imageView: ImageView = ImageView(this);
+        imageView.setImageDrawable(getDrawable(R.drawable.ic_launcher_background))
+        future = ViewRenderable.builder()
+            .setView(this, imageView)
+            .build()
         checkPermissions()
         maybeEnableArButton()
         checkARInstall()
-        var arFragment = getSupportFragmentManager()
-            .findFragmentById(R.id.ux_fragment) as ArFragment
-        arFragment.setOnTapArPlaneListener {
-                hitResult: HitResult, plane: Plane, motionEvent: MotionEvent ->
-            if(!plane.getAnchors().isEmpty()) {
-                var anchors: Collection<Anchor> = plane.anchors;
-                // and detaches them, making'em disappear from the Scene.
-                for (anchor in anchors) {
-                    anchor.detach();
-                }
-                return@setOnTapArPlaneListener
-            }
-
-            var imageView: ImageView = ImageView(this);
-            imageView.setImageDrawable(getDrawable(R.drawable.ic_launcher_background))
-
-            val future = ViewRenderable.builder()
-                .setView(this, imageView)
-                .build()
-            future.thenAccept{ renderable -> viewRenderable = renderable }
-
-            // Create the Anchor.
-            val anchor = hitResult.createAnchor()
-            val anchorNode = AnchorNode(anchor)
-            anchorNode.setParent(arFragment.arSceneView.scene)
-
-            // Create the transformable ViewRederable and add it to the anchor.
-            var tfNode: TransformableNode = TransformableNode(arFragment.getTransformationSystem());
-            tfNode.setParent(anchorNode);
-            tfNode.setRenderable(viewRenderable);
-            tfNode.select();
-
-            if (viewRenderable == null) {
-                return@setOnTapArPlaneListener
-            }
-        }
+        initAR()
     }
 
     override fun onRequestPermissionsResult(
@@ -135,5 +105,46 @@ class MainActivity : AppCompatActivity() {
                 .show();
             return;
         }
+    }
+
+    fun initAR() {
+
+        var arFragment = getSupportFragmentManager()
+            .findFragmentById(R.id.ux_fragment) as ArFragment
+        arFragment.setOnTapArPlaneListener {
+                hitResult: HitResult, plane: Plane, motionEvent: MotionEvent ->
+            if(plane.getAnchors().isEmpty()) {
+
+                Log.i("dhl", "Within the if of initAR.");
+                future?.thenAccept{ renderable -> viewRenderable = renderable }
+
+                // Create the Anchor.
+                val anchor = hitResult.createAnchor()
+                val anchorNode = AnchorNode(anchor)
+                anchorNode.setParent(arFragment.arSceneView.scene)
+
+                // Create the transformable ViewRederable and add it to the anchor.
+                var tfNode: TransformableNode = TransformableNode(arFragment.getTransformationSystem());
+                tfNode.setParent(anchorNode);
+                tfNode.setRenderable(viewRenderable);
+                tfNode.select();
+
+                if (viewRenderable == null) {
+                    return@setOnTapArPlaneListener
+                }
+
+            } else {
+                Log.i("dhl", "Within the else of initAR.");
+                var anchors: Collection<Anchor> = plane.anchors;
+
+                for (anchor in anchors) {
+                    anchor.detach();
+                }
+
+                return@setOnTapArPlaneListener
+
+            }
+        }
+
     }
 }
