@@ -1,10 +1,13 @@
 package com.example.artechtoprotect
 
 import android.Manifest
+import android.annotation.SuppressLint
+import android.content.Intent
 import android.content.pm.PackageManager
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Handler
+import android.provider.MediaStore
 import android.util.Log
 import android.view.Gravity
 import android.view.View
@@ -17,6 +20,7 @@ import com.google.ar.core.exceptions.UnavailableUserDeclinedInstallationExceptio
 import com.google.ar.sceneform.Node
 import com.google.ar.sceneform.rendering.ModelRenderable
 import com.google.ar.sceneform.ux.ArFragment
+import kotlinx.android.synthetic.main.activity_main.*
 
 
 class MainActivity : AppCompatActivity() {
@@ -45,6 +49,14 @@ class MainActivity : AppCompatActivity() {
             };
         node.setParent(arFragment.getArSceneView().getScene());
         node.renderable = andyRenderable;
+
+        takePhoto.setOnClickListener {
+            dispatchTakePictureIntent()
+        }
+
+        quit.setOnClickListener {
+            finish()
+        }
     }
 
     override fun onRequestPermissionsResult(
@@ -105,6 +117,23 @@ class MainActivity : AppCompatActivity() {
             Toast.makeText(this, "TODO: handle exception " + e, Toast.LENGTH_LONG)
                 .show();
             return;
+        }
+    }
+
+    private val requestImageCapture = 1
+
+    private fun dispatchTakePictureIntent() {
+        Intent(MediaStore.ACTION_IMAGE_CAPTURE).also { takePictureIntent ->
+            takePictureIntent.resolveActivity(packageManager)?.also {
+                startActivityForResult(takePictureIntent, requestImageCapture)
+            }
+        }
+    }
+
+    @SuppressLint("MissingSuperCall")
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        if (requestCode == requestImageCapture && resultCode == RESULT_OK) {
+            Toast.makeText(this, "Photo was Saved", Toast.LENGTH_LONG).show()
         }
     }
 }

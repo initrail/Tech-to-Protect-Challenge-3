@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">ARTechToProtect</string>
+    <string name="quit">Quit</string>
+    <string name="photo">Take Photo</string>
 </resources>
