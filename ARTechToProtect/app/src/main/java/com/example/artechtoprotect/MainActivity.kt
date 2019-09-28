@@ -6,6 +6,7 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Handler
 import android.util.Log
+import android.view.Gravity
 import android.view.View
 import android.widget.Toast
 import androidx.core.app.ActivityCompat
@@ -13,11 +14,15 @@ import androidx.core.content.ContextCompat
 import androidx.core.os.HandlerCompat.postDelayed
 import com.google.ar.core.ArCoreApk
 import com.google.ar.core.exceptions.UnavailableUserDeclinedInstallationException
+import com.google.ar.sceneform.Node
+import com.google.ar.sceneform.rendering.ModelRenderable
+import com.google.ar.sceneform.ux.ArFragment
 
 
 class MainActivity : AppCompatActivity() {
 
     var ENABLE_CAMERA: Int = 111;
+    var andyRenderable: ModelRenderable? = null;
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -25,6 +30,21 @@ class MainActivity : AppCompatActivity() {
         checkPermissions();
         maybeEnableArButton();
         checkARInstall();
+        var node = Node();
+        var arFragment = getSupportFragmentManager()
+            .findFragmentById(R.id.ux_fragment) as ArFragment
+        var future = ModelRenderable.builder()
+            .setSource(this, R.drawable.ic_launcher_foreground)
+            .build()
+            .thenAccept { modelRenderable -> andyRenderable = modelRenderable  }
+            .exceptionally { throwable ->
+                val toast = Toast.makeText(this, "Unable to load andy renderable", Toast.LENGTH_LONG)
+                toast.setGravity(Gravity.CENTER, 0, 0)
+                toast.show()
+                null
+            };
+        node.setParent(arFragment.getArSceneView().getScene());
+        node.renderable = andyRenderable;
     }
 
     override fun onRequestPermissionsResult(
