@@ -2,49 +2,78 @@ package com.example.artechtoprotect
 
 import android.Manifest
 import android.content.pm.PackageManager
+import android.media.Image
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Handler
 import android.util.Log
-import android.view.Gravity
+import android.view.MotionEvent
 import android.view.View
+import android.widget.ImageView
 import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import androidx.core.os.HandlerCompat.postDelayed
+import com.google.ar.core.Anchor
 import com.google.ar.core.ArCoreApk
+import com.google.ar.core.HitResult
+import com.google.ar.core.Plane
 import com.google.ar.core.exceptions.UnavailableUserDeclinedInstallationException
-import com.google.ar.sceneform.Node
+import com.google.ar.sceneform.AnchorNode
 import com.google.ar.sceneform.rendering.ModelRenderable
+import com.google.ar.sceneform.rendering.ViewRenderable
 import com.google.ar.sceneform.ux.ArFragment
+import com.google.ar.sceneform.ux.TransformableNode
+import java.util.concurrent.CompletableFuture
 
 
 class MainActivity : AppCompatActivity() {
 
     var ENABLE_CAMERA: Int = 111;
     var andyRenderable: ModelRenderable? = null;
+    var viewRenderable: ViewRenderable? = null;
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        checkPermissions();
-        maybeEnableArButton();
-        checkARInstall();
-        var node = Node();
+        checkPermissions()
+        maybeEnableArButton()
+        checkARInstall()
         var arFragment = getSupportFragmentManager()
             .findFragmentById(R.id.ux_fragment) as ArFragment
-        var future = ModelRenderable.builder()
-            .setSource(this, R.drawable.ic_launcher_foreground)
-            .build()
-            .thenAccept { modelRenderable -> andyRenderable = modelRenderable  }
-            .exceptionally { throwable ->
-                val toast = Toast.makeText(this, "Unable to load andy renderable", Toast.LENGTH_LONG)
-                toast.setGravity(Gravity.CENTER, 0, 0)
-                toast.show()
-                null
-            };
-        node.setParent(arFragment.getArSceneView().getScene());
-        node.renderable = andyRenderable;
+        arFragment.setOnTapArPlaneListener {
+                hitResult: HitResult, plane: Plane, motionEvent: MotionEvent ->
+            if(!plane.getAnchors().isEmpty()) {
+                var anchors: Collection<Anchor> = plane.anchors;
+                // and detaches them, making'em disappear from the Scene.
+                for (anchor in anchors) {
+                    anchor.detach();
+                }
+                return@setOnTapArPlaneListener
+            }
+
+            var imageView: ImageView = ImageView(this);
+            imageView.setImageDrawable(getDrawable(R.drawable.ic_launcher_background))
+
+            val future = ViewRenderable.builder()
+                .setView(this, imageView)
+                .build()
+            future.thenAccept{ renderable -> viewRenderable = renderable }
+
+            // Create the Anchor.
+            val anchor = hitResult.createAnchor()
+            val anchorNode = AnchorNode(anchor)
+            anchorNode.setParent(arFragment.arSceneView.scene)
+
+            // Create the transformable ViewRederable and add it to the anchor.
+            var tfNode: TransformableNode = TransformableNode(arFragment.getTransformationSystem());
+            tfNode.setParent(anchorNode);
+            tfNode.setRenderable(viewRenderable);
+            tfNode.select();
+
+            if (viewRenderable == null) {
+                return@setOnTapArPlaneListener
+            }
+        }
     }
 
     override fun onRequestPermissionsResult(
