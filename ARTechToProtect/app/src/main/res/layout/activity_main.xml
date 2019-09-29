@@ -15,8 +15,8 @@
         android:layout_height="wrap_content"
         android:layout_alignStart="@+id/ux_fragment"
         android:layout_alignBottom="@+id/ux_fragment"
-        android:layout_marginStart="307dp"
-        android:layout_marginEnd="190dp"
+        android:layout_marginStart="77dp"
+        android:layout_marginEnd="100dp"
         android:layout_marginBottom="20dp"
         android:layout_toStartOf="@+id/quit"
         android:text="@string/photo" />
