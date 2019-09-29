@@ -1,11 +1,14 @@
 package com.example.artechtoprotect
 
 import android.Manifest
+import android.annotation.SuppressLint
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.media.Image
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Handler
+import android.provider.MediaStore
 import android.util.Log
 import android.view.MotionEvent
 import android.view.View
@@ -22,9 +25,9 @@ import com.google.ar.sceneform.AnchorNode
 import com.google.ar.sceneform.rendering.ModelRenderable
 import com.google.ar.sceneform.rendering.ViewRenderable
 import com.google.ar.sceneform.ux.ArFragment
+import kotlinx.android.synthetic.main.activity_main.*
 import com.google.ar.sceneform.ux.TransformableNode
 import java.util.concurrent.CompletableFuture
-
 
 class MainActivity : AppCompatActivity() {
 
@@ -40,6 +43,15 @@ class MainActivity : AppCompatActivity() {
         future = ViewRenderable.builder()
             .setView(this, imageView)
             .build()
+        
+        takePhoto.setOnClickListener {
+            dispatchTakePictureIntent()
+        }
+
+        quit.setOnClickListener {
+            finish()
+        }
+      
         checkPermissions()
         maybeEnableArButton()
         checkARInstall()
@@ -107,6 +119,23 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    private val requestImageCapture = 1
+
+    private fun dispatchTakePictureIntent() {
+        Intent(MediaStore.ACTION_IMAGE_CAPTURE).also { takePictureIntent ->
+            takePictureIntent.resolveActivity(packageManager)?.also {
+                startActivityForResult(takePictureIntent, requestImageCapture)
+            }
+        }
+    }
+
+    @SuppressLint("MissingSuperCall")
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        if (requestCode == requestImageCapture && resultCode == RESULT_OK) {
+            Toast.makeText(this, "Photo was Saved", Toast.LENGTH_LONG).show()
+        }
+    }  
+      
     fun initAR() {
 
         var arFragment = getSupportFragmentManager()
@@ -145,6 +174,5 @@ class MainActivity : AppCompatActivity() {
 
             }
         }
-
     }
 }
