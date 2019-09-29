@@ -36,7 +36,7 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         var imageView: ImageView = ImageView(this);
-        imageView.setImageDrawable(getDrawable(R.drawable.ic_launcher_background))
+        imageView.setImageDrawable(getDrawable(R.drawable.extraction_diagram))
         future = ViewRenderable.builder()
             .setView(this, imageView)
             .build()
