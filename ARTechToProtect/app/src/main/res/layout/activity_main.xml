@@ -15,9 +15,6 @@
         android:layout_height="wrap_content"
         android:layout_alignStart="@+id/ux_fragment"
         android:layout_alignBottom="@+id/ux_fragment"
-        android:layout_marginStart="77dp"
-        android:layout_marginEnd="100dp"
-        android:layout_marginBottom="20dp"
         android:layout_toStartOf="@+id/quit"
         android:text="@string/photo" />
 
@@ -27,8 +24,6 @@
         android:layout_height="wrap_content"
         android:layout_alignEnd="@+id/ux_fragment"
         android:layout_alignBottom="@+id/ux_fragment"
-        android:layout_marginEnd="36dp"
-        android:layout_marginBottom="20dp"
         android:text="@string/quit" />
 
 </RelativeLayout>
